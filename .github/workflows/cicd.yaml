@@ -1,0 +1,101 @@
+name: KBOT-CI/CD Pipeline
+
+on: 
+  push:
+    branches: [ develop ]
+  pull_request:
+    branches: [ develop ]
+
+permissions:
+  contents: write
+  packages: write
+
+env:
+  TARGETOS: linux
+  TARGETARCH: amd64
+  REGISTRY: "ghcr.io/${{ github.repository_owner }}"
+
+jobs:
+    ci:
+      name: CI
+      runs-on: ubuntu-latest
+
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v6
+          with:
+            fetch-depth: 0
+
+        - name: Set up Go
+          uses: actions/setup-go@v6
+          with:
+            go-version: '1.25'
+            cache: true
+
+        - name: Run golangci-lint
+          uses: golangci/golangci-lint-action@v8
+          with:
+            version: latest
+            args: --timeout=5m
+
+        # - name: Run test
+        #   run: make test
+
+    cd:
+      name: CD
+      needs: ci
+      runs-on: ubuntu-latest
+
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v6
+          with:
+            fetch-depth: 0
+
+        - name: Set up Go
+          uses: actions/setup-go@v6
+          with:
+            go-version: '1.25'
+            cache: true
+
+        - name: Set version
+          run: |
+            VERSION=v$(git describe --tags --abbrev=0)-$(git rev-parse --short HEAD)
+            echo "VERSION=$VERSION" >> $GITHUB_ENV
+            echo "Using version: $VERSION"
+
+        - name: Login to GitHub Container Registry
+          uses: docker/login-action@v3
+          with:
+            registry: ghcr.io
+            username: ${{ github.actor }}
+            password: ${{ secrets.GITHUB_TOKEN }}
+
+        - name: Set up QEMU
+          uses: docker/setup-qemu-action@v3
+
+        - name: Set up Docker Buildx
+          uses: docker/setup-buildx-action@v3
+
+        - name: Build and Push Container to GitHub Container Registry
+          env:
+            APP: "kbot"
+            REGISTRY: "${{ env.REGISTRY }}"
+          run: |
+            make image push \
+              TARGETOS=${{ env.TARGETOS }} \
+              TARGETARCH=${{ env.TARGETARCH }} \
+              VERSION=${{ env.VERSION }}
+
+        - name: Update Helm chart
+          uses: mikefarah/yq@master
+          with:
+            cmd: yq -i '.image.repository=strenv(REGISTRY) | .image.tag=strenv(VERSION) | .image.arch=strenv(TARGETARCH)' helm/values.yaml
+        - run: |
+            git config user.name github-actions
+            git config user.email github-actions@github.com
+            git commit -am "update version $VERSION"
+            git push
+
+        - name: Cleanup
+          run: make clean TARGETARCH=${{ env.TARGETARCH }}

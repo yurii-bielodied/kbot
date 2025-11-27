@@ -1,7 +1,7 @@
 # Application name and registry configuration
 APP ?= $(shell basename $(shell git remote get-url origin))
 REGISTRY ?= yurii-bielodied
-VERSION ?= v$(shell git describe --tags --abbrev=0)-$(shell git rev-parse --short HEAD)
+VERSION ?= $(shell git describe --tags --abbrev=0)-$(shell git rev-parse --short HEAD)
 REPO ?= kbot
 
 # Build configuration

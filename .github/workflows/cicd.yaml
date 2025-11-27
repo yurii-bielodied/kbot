@@ -60,7 +60,7 @@ jobs:
 
         - name: Set version
           run: |
-            VERSION=v$(git describe --tags --abbrev=0)-$(git rev-parse --short HEAD)
+            VERSION=$(git describe --tags --abbrev=0)-$(git rev-parse --short HEAD)
             echo "VERSION=$VERSION" >> $GITHUB_ENV
             echo "Using version: $VERSION"
 
@@ -99,5 +99,3 @@ jobs:
 
         - name: Cleanup
           run: make clean TARGETARCH=${{ env.TARGETARCH }}
-
-          

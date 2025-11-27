@@ -10,7 +10,7 @@ image:
   # This sets the pull policy for images.
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v1.1.0-a784de4"
+  tag: "v1.0.0"
   arch: amd64
 secret:
   name: "kbot"

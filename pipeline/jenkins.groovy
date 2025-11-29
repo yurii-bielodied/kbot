@@ -1,6 +1,5 @@
 pipeline {
-    // agent any
-    agent { label 'built-in' }  }
+    agent { label 'built-in' }
     
     parameters {
         choice(

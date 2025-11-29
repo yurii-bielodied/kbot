@@ -51,7 +51,6 @@ pipeline {
     }
 
     options {
-        timestamps()
         buildDiscarder(logRotator(numToKeepStr: '5'))
     }
 

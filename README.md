@@ -137,35 +137,31 @@ TELE_TOKEN="<ваш_Telegram_token>" ./kbot start
 
 ```mermaid
 flowchart TD
-    A[Developer push<br/>branch <code>develop</code>] --> B[GitHub Actions<br/>KBOT-CI/CD Pipeline]
+  A[Push to branch develop] --> B[GitHub Actions workflow KBOT CI CD]
 
-    %% -------- CI JOB --------
-    subgraph CI[Job: ci – Lint & checks]
-        B --> C[Checkout<br/>(actions/checkout@v6)]
-        C --> D[Setup Go 1.25<br/>(actions/setup-go@v6)]
-        D --> E[Run golangci-lint<br/>(golangci-lint-action@v8)]
-    end
+  subgraph CI
+    B --> C[Checkout repository]
+    C --> D[Set up Go 1.25]
+    D --> E[Run golangci lint]
+  end
 
-    E --> F{CI success?}
-    F -- no --> X[Pipeline failed<br/>fix lint errors]
-    F -- yes --> G[Start CD job]
+  E --> F[Start job cd]
 
-    %% -------- CD JOB --------
-    subgraph CD[Job: cd – Build, Push, Update Helm]
-        G --> H[Checkout<br/>(actions/checkout@v6)]
-        H --> I[Setup Go 1.25]
-        I --> J[Set VERSION<br/>(git tag + short SHA)]
-        J --> K[Login to ghcr.io<br/>(docker/login-action@v3)]
-        K --> L[Setup QEMU & Buildx<br/>(docker/setup-qemu/buildx)]
-        L --> M[Build & Push image<br/><code>make image push</code><br/>TARGETOS=linux, TARGETARCH=amd64, VERSION]
-        M --> N[Update helm/values.yaml<br/>image.repository = REGISTRY<br/>image.tag = VERSION<br/>image.os = TARGETOS<br/>image.arch = TARGETARCH]
-        N --> O[git commit -am "update version $VERSION"<br/>git push]
-        O --> P[Cleanup<br/><code>make clean</code>]
-    end
+  subgraph CD
+    F --> H[Checkout repository]
+    H --> I[Set up Go 1.25]
+    I --> J[Set VERSION from git tag and commit SHA]
+    J --> K[Login to ghcr io]
+    K --> L[Set up QEMU and Buildx]
+    L --> M[Run make image push to registry]
+    M --> N[Update Helm values yaml]
+    N --> O[Run git commit and git push]
+    O --> P[Run make clean]
+  end
 
-    %% -------- ARGO CD & RUNTIME --------
-    O --> Q[ArgoCD watches repo<br/>& detects Helm change]
-    Q --> R[ArgoCD syncs app<br/>(auto / manual)]
-    R --> S[(Kubernetes cluster<br/>kbot Deployment/Pods)]
+  O --> Q[ArgoCD detects changes]
+  Q --> R[ArgoCD syncs kbot application]
+  R --> S[Kubernetes cluster with kbot pods]
 
-    T[Telegram User] <-->|Messages via<br/>Telegram Bot API| S
+  T[Telegram user] --> S
+  S --> T

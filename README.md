@@ -132,3 +132,40 @@ Hello from Kbot!
 ```bash
 TELE_TOKEN="<ваш_Telegram_token>" ./kbot start
 ```
+
+## CI/CD Workflow (KBOT-CI/CD Pipeline)
+
+```mermaid
+flowchart TD
+    A[Developer push<br/>branch <code>develop</code>] --> B[GitHub Actions<br/>KBOT-CI/CD Pipeline]
+
+    %% -------- CI JOB --------
+    subgraph CI[Job: ci – Lint & checks]
+        B --> C[Checkout<br/>(actions/checkout@v6)]
+        C --> D[Setup Go 1.25<br/>(actions/setup-go@v6)]
+        D --> E[Run golangci-lint<br/>(golangci-lint-action@v8)]
+    end
+
+    E --> F{CI success?}
+    F -- no --> X[Pipeline failed<br/>fix lint errors]
+    F -- yes --> G[Start CD job]
+
+    %% -------- CD JOB --------
+    subgraph CD[Job: cd – Build, Push, Update Helm]
+        G --> H[Checkout<br/>(actions/checkout@v6)]
+        H --> I[Setup Go 1.25]
+        I --> J[Set VERSION<br/>(git tag + short SHA)]
+        J --> K[Login to ghcr.io<br/>(docker/login-action@v3)]
+        K --> L[Setup QEMU & Buildx<br/>(docker/setup-qemu/buildx)]
+        L --> M[Build & Push image<br/><code>make image push</code><br/>TARGETOS=linux, TARGETARCH=amd64, VERSION]
+        M --> N[Update helm/values.yaml<br/>image.repository = REGISTRY<br/>image.tag = VERSION<br/>image.os = TARGETOS<br/>image.arch = TARGETARCH]
+        N --> O[git commit -am "update version $VERSION"<br/>git push]
+        O --> P[Cleanup<br/><code>make clean</code>]
+    end
+
+    %% -------- ARGO CD & RUNTIME --------
+    O --> Q[ArgoCD watches repo<br/>& detects Helm change]
+    Q --> R[ArgoCD syncs app<br/>(auto / manual)]
+    R --> S[(Kubernetes cluster<br/>kbot Deployment/Pods)]
+
+    T[Telegram User] <-->|Messages via<br/>Telegram Bot API| S

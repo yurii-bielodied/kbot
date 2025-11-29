@@ -135,6 +135,7 @@ TELE_TOKEN="<ваш_Telegram_token>" ./kbot start
 
 ## CI/CD Workflow (KBOT-CI/CD Pipeline)
 
+```mermaid
 flowchart TD
   A[Push to branch develop] --> B[GitHub Actions workflow KBOT CI CD]
 

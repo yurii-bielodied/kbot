@@ -44,6 +44,7 @@ pipeline {
             description: 'Push Docker image to registry (make push)?'
         )
     }
+    
     environment {
         TARGETARCH = "${params.TARGETARCH}"
         TARGETOS   = "${params.TARGETOS}"

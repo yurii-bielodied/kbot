@@ -1,16 +1,17 @@
 pipeline {
-    agent any
+    // agent any
+    agent { label 'built-in' }
     
     parameters {
         choice(
             name: 'OS',
             choices: ['linux', 'darwin', 'windows'],
-            description: 'Target operating system'
+            description: 'Pick Target operating system'
         )
         choice(
             name: 'ARCH',
             choices: ['amd64', 'arm64'],
-            description: 'Target architecture'
+            description: 'Pick Target architecture'
         )
         booleanParam(
             name: 'SKIP_TESTS',
@@ -51,7 +52,6 @@ pipeline {
     }
 
     options {
-        timestamps()
         buildDiscarder(logRotator(numToKeepStr: '5'))
     }
 

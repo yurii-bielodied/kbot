@@ -38,9 +38,6 @@ jobs:
             version: latest
             args: --timeout=5m
 
-        # - name: Run test
-        #   run: make test
-
     cd:
       name: CD
       needs: ci
@@ -90,7 +87,7 @@ jobs:
         - name: Update Helm chart
           uses: mikefarah/yq@master
           with:
-            cmd: yq -i '.image.repository=strenv(REGISTRY) | .image.tag=strenv(VERSION) | .image.arch=strenv(TARGETARCH)' helm/values.yaml
+            cmd: yq -i '.image.repository=strenv(REGISTRY) | .image.tag=strenv(VERSION) | .image.os=strenv(TARGETOS) | .image.arch=strenv(TARGETARCH)' helm/values.yaml
         - run: |
             git config user.name github-actions
             git config user.email github-actions@github.com

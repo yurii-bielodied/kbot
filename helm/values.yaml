@@ -10,7 +10,7 @@ image:
   # This sets the pull policy for images.
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v1.0.0-7509ab5"
+  tag: "v1.0.0-072619c"
   os: linux
   arch: amd64
 secret:
@@ -33,33 +33,9 @@ serviceAccount:
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name: ""
-# =====================================================
-# PROMETHEUS METRICS CONFIGURATION
-# =====================================================
-metrics:
-  enabled: true
-  port: 8080
-  path: /metrics
-  serviceMonitor:
-    enabled: true
-    interval: 30s
-    additionalLabels:
-      release: kube-prometheus-stack
-# =====================================================
-# OPENTELEMETRY TRACING CONFIGURATION
-# =====================================================
-tracing:
-  enabled: true
-  # OTEL Collector endpoint (gRPC)
-  otlpEndpoint: "otel-collector-collector.monitoring.svc.cluster.local:4317"
-  # Sampling rate (1.0 = 100%)
-  samplingRate: "1.0"
 # This is for setting Kubernetes Annotations to a Pod.
 # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-podAnnotations:
-  prometheus.io/scrape: "true"
-  prometheus.io/port: "8080"
-  prometheus.io/path: "/metrics"
+podAnnotations: {}
 # This is for setting Kubernetes Labels to a Pod.
 # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
 podLabels: {}
@@ -146,16 +122,12 @@ resources: {}
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 livenessProbe:
   httpGet:
-    path: /metrics
-    port: metrics
-  initialDelaySeconds: 10
-  periodSeconds: 15
+    path: /
+    port: http
 readinessProbe:
   httpGet:
-    path: /metrics
-    port: metrics
-  initialDelaySeconds: 5
-  periodSeconds: 10
+    path: /
+    port: http
 # This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
   enabled: false

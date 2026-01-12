@@ -60,8 +60,6 @@ podAnnotations:
   prometheus.io/scrape: "true"
   prometheus.io/port: "8080"
   prometheus.io/path: "/metrics"
-  # OTEL auto-instrumentation (якщо використовується operator)
-  instrumentation.opentelemetry.io/inject-go: "true"
 # This is for setting Kubernetes Labels to a Pod.
 # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
 podLabels: {}

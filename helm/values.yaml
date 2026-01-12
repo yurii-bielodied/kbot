@@ -86,10 +86,10 @@ ingress:
   # kubernetes.io/ingress.class: nginx
   # kubernetes.io/tls-acme: "true"
   hosts:
-    - host: chart-example.local
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
+  - host: chart-example.local
+    paths:
+    - path: /
+      pathType: ImplementationSpecific
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
@@ -104,33 +104,33 @@ httpRoute:
   annotations: {}
   # Which Gateways this Route is attached to.
   parentRefs:
-    - name: gateway
-      sectionName: http
-      # namespace: default
-      # Hostnames matching HTTP header.
+  - name: gateway
+    sectionName: http
+    # namespace: default
+    # Hostnames matching HTTP header.
   hostnames:
-    - chart-example.local
+  - chart-example.local
   # List of rules and filters applied.
   rules:
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /headers
-            #   filters:
-            #   - type: RequestHeaderModifier
-            #     requestHeaderModifier:
-            #       set:
-            #       - name: My-Overwrite-Header
-            #         value: this-is-the-only-value
-            #       remove:
-            #       - User-Agent
-            # - matches:
-            #   - path:
-            #       type: PathPrefix
-            #       value: /echo
-            #     headers:
-            #     - name: version
-            #       value: v2
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /headers
+        #   filters:
+        #   - type: RequestHeaderModifier
+        #     requestHeaderModifier:
+        #       set:
+        #       - name: My-Overwrite-Header
+        #         value: this-is-the-only-value
+        #       remove:
+        #       - User-Agent
+        # - matches:
+        #   - path:
+        #       type: PathPrefix
+        #       value: /echo
+        #     headers:
+        #     - name: version
+        #       value: v2
 resources: {}
 # We usually recommend not to specify default resources and to leave this as a conscious
 # choice for the user. This also increases chances charts run on environments with little
@@ -146,12 +146,16 @@ resources: {}
 # This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
 livenessProbe:
   httpGet:
-    path: /
-    port: http
+    path: /health
+    port: metrics
+  initialDelaySeconds: 10
+  periodSeconds: 15
 readinessProbe:
   httpGet:
-    path: /
-    port: http
+    path: /ready
+    port: metrics
+  initialDelaySeconds: 5
+  periodSeconds: 10
 # This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
 autoscaling:
   enabled: false

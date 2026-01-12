@@ -10,7 +10,7 @@ image:
   # This sets the pull policy for images.
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v1.0.0-c94cb02"
+  tag: "v1.0.0-f06afac"
   os: linux
   arch: amd64
 secret:

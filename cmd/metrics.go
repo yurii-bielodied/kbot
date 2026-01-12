@@ -75,13 +75,13 @@ func StartMetricsServer(port string) {
 	// /health - endpoint для liveness probe
 	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("ok"))
+		_, _ = w.Write([]byte("ok"))
 	})
 
 	// /ready - endpoint для readiness probe
 	mux.HandleFunc("/ready", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("ready"))
+		_, _ = w.Write([]byte("ok"))
 	})
 
 	// Запускаємо сервер в горутині

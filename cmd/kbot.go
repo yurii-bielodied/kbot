@@ -62,6 +62,12 @@ Commands:
 		fmt.Printf("kbot %s starting...\n", appVersion)
 
 		// =====================================================
+		// ЗАПУСК METRICS SERVER
+		// =====================================================
+		StartMetricsServer(MetricsPort)
+		fmt.Printf("Metrics server started on port %s\n", MetricsPort)
+
+		// =====================================================
 		// ІНІЦІАЛІЗАЦІЯ OPENTELEMETRY TRACING
 		// =====================================================
 		var shutdownTracer func(context.Context) error
@@ -76,13 +82,6 @@ Commands:
 		} else {
 			fmt.Println("OpenTelemetry tracing disabled (set OTEL_EXPORTER_OTLP_ENDPOINT to enable)")
 		}
-
-		// =====================================================
-		// ЗАПУСК METRICS SERVER
-		// =====================================================
-		StartMetricsServer(MetricsPort)
-		fmt.Printf("Metrics server started on port %s\n", MetricsPort)
-
 		// =====================================================
 		// ІНІЦІАЛІЗАЦІЯ TELEGRAM BOT
 		// =====================================================
@@ -206,6 +205,10 @@ Commands:
 		// Чекаємо на сигнал завершення
 		<-sigChan
 		fmt.Println("\nShutting down...")
+
+		if kbot != nil {
+			kbot.Stop()
+		}
 
 		// Graceful shutdown
 		kbot.Stop()

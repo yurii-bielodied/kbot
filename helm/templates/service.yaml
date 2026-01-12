@@ -11,5 +11,14 @@ spec:
       targetPort: http
       protocol: TCP
       name: http
+    # =====================================================
+    # METRICS PORT - для Prometheus ServiceMonitor
+    # =====================================================
+    {{- if .Values.metrics.enabled }}
+    - port: {{ .Values.metrics.port }}
+      targetPort: metrics
+      protocol: TCP
+      name: metrics
+    {{- end }}
   selector:
     {{- include "kbot.selectorLabels" . | nindent 4 }}

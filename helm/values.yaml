@@ -10,7 +10,7 @@ image:
   # This sets the pull policy for images.
   pullPolicy: Always
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v1.0.0-ff8307a"
+  tag: "v1.0.0-7509ab5"
   os: linux
   arch: amd64
 secret:
@@ -33,9 +33,35 @@ serviceAccount:
   # The name of the service account to use.
   # If not set and create is true, a name is generated using the fullname template
   name: ""
+# =====================================================
+# PROMETHEUS METRICS CONFIGURATION
+# =====================================================
+metrics:
+  enabled: true
+  port: 8080
+  path: /metrics
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    additionalLabels:
+      release: kube-prometheus-stack
+# =====================================================
+# OPENTELEMETRY TRACING CONFIGURATION
+# =====================================================
+tracing:
+  enabled: true
+  # OTEL Collector endpoint (gRPC)
+  otlpEndpoint: "otel-collector-collector.monitoring.svc.cluster.local:4317"
+  # Sampling rate (1.0 = 100%)
+  samplingRate: "1.0"
 # This is for setting Kubernetes Annotations to a Pod.
 # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
-podAnnotations: {}
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8080"
+  prometheus.io/path: "/metrics"
+  # OTEL auto-instrumentation (якщо використовується operator)
+  instrumentation.opentelemetry.io/inject-go: "true"
 # This is for setting Kubernetes Labels to a Pod.
 # For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
 podLabels: {}
@@ -62,10 +88,10 @@ ingress:
   # kubernetes.io/ingress.class: nginx
   # kubernetes.io/tls-acme: "true"
   hosts:
-    - host: chart-example.local
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
+  - host: chart-example.local
+    paths:
+    - path: /
+      pathType: ImplementationSpecific
   tls: []
   #  - secretName: chart-example-tls
   #    hosts:
@@ -80,33 +106,33 @@ httpRoute:
   annotations: {}
   # Which Gateways this Route is attached to.
   parentRefs:
-    - name: gateway
-      sectionName: http
-      # namespace: default
-      # Hostnames matching HTTP header.
+  - name: gateway
+    sectionName: http
+    # namespace: default
+    # Hostnames matching HTTP header.
   hostnames:
-    - chart-example.local
+  - chart-example.local
   # List of rules and filters applied.
   rules:
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /headers
-            #   filters:
-            #   - type: RequestHeaderModifier
-            #     requestHeaderModifier:
-            #       set:
-            #       - name: My-Overwrite-Header
-            #         value: this-is-the-only-value
-            #       remove:
-            #       - User-Agent
-            # - matches:
-            #   - path:
-            #       type: PathPrefix
-            #       value: /echo
-            #     headers:
-            #     - name: version
-            #       value: v2
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /headers
+        #   filters:
+        #   - type: RequestHeaderModifier
+        #     requestHeaderModifier:
+        #       set:
+        #       - name: My-Overwrite-Header
+        #         value: this-is-the-only-value
+        #       remove:
+        #       - User-Agent
+        # - matches:
+        #   - path:
+        #       type: PathPrefix
+        #       value: /echo
+        #     headers:
+        #     - name: version
+        #       value: v2
 resources: {}
 # We usually recommend not to specify default resources and to leave this as a conscious
 # choice for the user. This also increases chances charts run on environments with little

@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -127,13 +128,20 @@ Commands:
 					m.Sender().Username, m.Text())
 			}
 
-			payload := m.Message().Payload
+			command := strings.TrimSpace(m.Message().Payload)
+			if command == "" {
+				command = strings.TrimPrefix(m.Text(), "/")
+			}
+			command = strings.ToLower(command)
+
+			// payload := m.Message().Payload
 			var sendErr error
-			var command string
+			// var command string
 			var response string
 
 			// Обробка команд з вкладеними spans
-			switch payload {
+			// switch payload {
+			switch command {
 			case "hello":
 				command = "hello"
 				_, cmdSpan := StartSpan(ctx, "command_hello")
@@ -156,10 +164,20 @@ Commands:
 				}
 				cmdSpan.End()
 
+			case "version":
+				_, cmdSpan := StartSpan(ctx, "command_version")
+				response = fmt.Sprintf("Kbot version: %s", appVersion)
+				sendErr = m.Send(response)
+				if sendErr != nil {
+					cmdSpan.RecordError(sendErr)
+					cmdSpan.SetStatus(codes.Error, sendErr.Error())
+				}
+				cmdSpan.End()
+
 			default:
 				command = "unknown"
 				_, cmdSpan := StartSpan(ctx, "command_default")
-				response = "Hello from Kbot! Try /kbot hello or /kbot time"
+				response = "Hello from Kbot! Try /start hello, /start version or /start time"
 				sendErr = m.Send(response)
 				if sendErr != nil {
 					cmdSpan.RecordError(sendErr)
@@ -206,12 +224,10 @@ Commands:
 		<-sigChan
 		fmt.Println("\nShutting down...")
 
+		// Graceful shutdown
 		if kbot != nil {
 			kbot.Stop()
 		}
-
-		// Graceful shutdown
-		kbot.Stop()
 
 		if shutdownTracer != nil {
 			shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)

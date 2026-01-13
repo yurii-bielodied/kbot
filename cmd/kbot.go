@@ -164,10 +164,20 @@ Commands:
 				}
 				cmdSpan.End()
 
+			case "version":
+				_, cmdSpan := StartSpan(ctx, "command_version")
+				response = fmt.Sprintf("Kbot version: %s", appVersion)
+				sendErr = m.Send(response)
+				if sendErr != nil {
+					cmdSpan.RecordError(sendErr)
+					cmdSpan.SetStatus(codes.Error, sendErr.Error())
+				}
+				cmdSpan.End()
+
 			default:
 				command = "unknown"
 				_, cmdSpan := StartSpan(ctx, "command_default")
-				response = "Hello from Kbot! Try hello or time"
+				response = "Hello from Kbot! Try hello, version or time"
 				sendErr = m.Send(response)
 				if sendErr != nil {
 					cmdSpan.RecordError(sendErr)
